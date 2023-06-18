@@ -72,6 +72,7 @@ module.exports = {
         data: {
           promo: complete_promo,
           code: parseInt(code),
+          updatedAt: new Date(),
         },
       });
     } else {

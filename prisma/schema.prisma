@@ -14,6 +14,6 @@ model CalendarUrl {
   id       String      @id @default(auto()) @map("_id") @db.ObjectId
   promo    String      @unique
   code     Int     @unique
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime
   createdAt DateTime @default(now())
 }
