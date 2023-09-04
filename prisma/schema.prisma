@@ -17,3 +17,11 @@ model CalendarUrl {
   updatedAt DateTime
   createdAt DateTime @default(now())
 }
+
+model LinkedInUrl {
+  id       String      @id @default(auto()) @map("_id") @db.ObjectId
+  user    String      @unique
+  link    String     @unique
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}

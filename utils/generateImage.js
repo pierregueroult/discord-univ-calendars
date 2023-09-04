@@ -156,7 +156,7 @@ async function generateImage(events) {
       ctx.fillStyle = "#ffffff";
 
       ctx.fillText(
-        "Généré par BDE - Calendar#2793",
+        "Généré par BDE - Labete#2793",
         canvas.width - 20,
         canvas.height - 5
       );

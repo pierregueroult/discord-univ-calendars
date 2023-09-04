@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const promoParams = require("../utils/promoParams");
 const groupParams = require("../utils/groupParams");
 const { PrismaClient } = require("@prisma/client");
@@ -33,7 +33,8 @@ module.exports = {
         .setDescription("Choisis ton TP")
         .setRequired(true)
         .addChoices(...groupParams)
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages),
   async execute(interaction) {
     // extract promo and tp from command
     await interaction.deferReply();
@@ -123,6 +124,14 @@ module.exports = {
 
     const sortedWeekEvents = separatedWeekEvents.map((dayEvents) => {
       return sortEvents(dayEvents);
+    });
+
+    sortedWeekEvents.map((dayEvents) => {
+      for (let i = 0; i < dayEvents.length; i++) {
+        if (dayEvents[i].title.startsWith("Rentrée")) {
+          dayEvents.splice(i, 1);
+        }
+      }
     });
 
     const lastUpdate = codeData.updatedAt.toLocaleString().replace(" ", " à ");

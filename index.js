@@ -32,10 +32,10 @@ for (const file of commandFiles) {
   const command = require(filePath);
   if ("data" in command && "execute" in command) {
     client.commands.set(command.data.name, command);
-    console.log(`✅[SUCCESS] La commande ${file} est chargée.`);
+    console.log(`✅ [SUCCESS] La commande ${file} est chargée.`);
   } else {
     console.log(
-      `🚧[WARNING] Le fichier de commande ${file} ne fonctionne pas.`
+      `🚧 [WARNING] Le fichier de commande ${file} ne fonctionne pas.`
     );
   }
 }
@@ -44,8 +44,9 @@ for (const file of commandFiles) {
 client.on(Events.InteractionCreate, async (interaction) => {
   // if interaction is not a command, return
   if (!interaction.isCommand()) return;
+  if (interaction.user.bot) return;
 
-  console.log(`🪶[COMMAND] La commande ${interaction.commandName} vient d'être utilisée par 
+  console.log(`🪶 [COMMAND] La commande ${interaction.commandName} vient d'être utilisée par 
   ${interaction.user.username} sur le serveur ${interaction.guild.name}.
   `);
 
@@ -71,11 +72,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-const activities = ["ADE Campus", "les emplois du temps", "les cours"];
+const activities = [
+  "ADE Campus",
+  "les emplois du temps",
+  "les cours",
+  "des memes",
+];
 
 // on ready message
 client.on(Events.ClientReady, () => {
-  console.log(`\n🔴[STARTING] Le bot est lancée avec succés !\n`);
+  console.log(`\n🔴 [STARTING] Le bot est lancée avec succés !\n`);
 
   function updateStatus() {
     const index = Math.floor(Math.random() * (activities.length - 1) + 1);
@@ -85,7 +91,7 @@ client.on(Events.ClientReady, () => {
     });
     client.user.setStatus("dnd");
 
-    console.log(`🟢[STATUS] Le status du bot a été mis à jour.`);
+    console.log(`🟢 [STATUS] Le status du bot a été mis à jour.`);
   }
 
   updateStatus();

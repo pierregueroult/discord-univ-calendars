@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, PermissionsBitField } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  PermissionsBitField,
+  PermissionFlagsBits,
+} = require("discord.js");
 const promoParams = require("../utils/promoParams");
 const groupParams = require("../utils/groupParams");
 const isValidInteger = require("../utils/isValidInteger");
@@ -10,19 +14,19 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("rebind")
     .setDescription(
-      "Utilise cette commande pour asssigner des nouveaux liens aux emplois du temps."
+      "Commande Administrateur : Commande pour asssigner des nouveaux liens aux emplois du temps."
     )
     .addStringOption((option) =>
       option
         .setName("promo")
-        .setDescription("Choisis ta promo")
+        .setDescription("Choisis la promo")
         .setRequired(true)
         .addChoices(...promoParams)
     )
     .addStringOption((option) =>
       option
         .setName("tp")
-        .setDescription("Choisis ton TP")
+        .setDescription("Choisis le TP")
         .setRequired(true)
         .addChoices(...groupParams)
     )
@@ -31,7 +35,9 @@ module.exports = {
         .setName("code")
         .setDescription("Rentre le code de l'emploi du temps")
         .setRequired(true)
-    ),
+    )
+    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(interaction) {
     // we extract the promo and the link from the prompt
     const promo = interaction.options.getString("promo");
@@ -49,6 +55,7 @@ module.exports = {
       await interaction.reply(
         "Tu n'as malheuresement pas les persmissions pour utiliser cette commande. Si tu penses que tu devrais les avoir, renverse le pouvoir en place. Non je déconne, demande à un admin de faire le boulot à ta place."
       );
+      return;
     }
 
     // if the link is not valid then return
