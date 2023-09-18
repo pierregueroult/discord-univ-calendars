@@ -46,6 +46,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isCommand()) return;
   if (interaction.user.bot) return;
 
+  // if not the the user 689039190163194098 (me), return
+  if (interaction.user.id !== "689039190163194098") {
+    interaction.reply({
+      content: "Le bot est en maitenance, patience jeune padawan.",
+      ephemeral: false,
+    });
+    return;
+  }
+
   console.log(`🪶 [COMMAND] La commande ${interaction.commandName} vient d'être utilisée par 
   ${interaction.user.username} sur le serveur ${interaction.guild.name}.
   `);
@@ -72,6 +81,36 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
+// when the bot is mentionned, react with a heart
+client.on(Events.MessageCreate, (message) => {
+  if (message.author.bot) return;
+  if (message.mentions.has(client.user)) {
+    var l = client.emojis.cache.find((emoji) => emoji.name === "l1");
+    var a = client.emojis.cache.find((emoji) => emoji.name === "a1");
+    var b = client.emojis.cache.find((emoji) => emoji.name === "b1");
+    var e = client.emojis.cache.find((emoji) => emoji.name === "e1");
+    var t = client.emojis.cache.find((emoji) => emoji.name === "t1");
+    var e2 = client.emojis.cache.find((emoji) => emoji.name === "e2");
+    if (l && a && b && e && t && e2) {
+      message.react(l).then(() => {
+        message.react(a).then(() => {
+          message.react(b).then(() => {
+            message.react(e).then(() => {
+              message.react(t).then(() => {
+                message.react(e2).then(() => {
+                  message.react("🐺").then(() => {
+                    message.react("❤️");
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    }
+  }
+});
+
 const activities = [
   "ADE Campus",
   "les emplois du temps",
@@ -89,7 +128,6 @@ client.on(Events.ClientReady, () => {
       type: ActivityType.Streaming,
       url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     });
-    client.user.setStatus("dnd");
 
     console.log(`🟢 [STATUS] Le status du bot a été mis à jour.`);
   }

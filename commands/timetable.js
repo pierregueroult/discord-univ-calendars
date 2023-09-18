@@ -1,16 +1,13 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const promoParams = require("../utils/promoParams");
-const groupParams = require("../utils/groupParams");
+
 const { PrismaClient } = require("@prisma/client");
-
 const prisma = new PrismaClient();
-
-const sortEvents = require("../utils/sortEvents");
-const sleep = require("../utils/sleep");
 const createFileFromUrl = require("../utils/createFileFromUrl");
+const sleep = require("../utils/sleep");
 const getEventsFromFile = require("../utils/getEventsFromFile");
 const getWeekNumber = require("../utils/getWeekNumber");
 const generateImage = require("../utils/generateImage");
+const sortEvents = require("../utils/sortEvents");
 
 process.removeAllListeners("warning");
 
@@ -20,36 +17,149 @@ module.exports = {
     .setDescription(
       "Utilise cette commande pour récupérer ton emploi du temps de la semaine."
     )
-    .addStringOption((option) =>
-      option
-        .setName("promo")
-        .setDescription("Choisis ta promo")
-        .setRequired(true)
-        .addChoices(...promoParams)
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("mmi")
+        .setDescription("La commande pour les MMI")
+        .addStringOption((option) =>
+          option
+            .setName("année")
+            .setDescription("Choisis ton année")
+            .setRequired(true)
+            .addChoices(
+              {
+                name: "1ère",
+                value: "mmi1",
+              },
+              {
+                name: "2ème",
+                value: "mmi2",
+              },
+              {
+                name: "3ème",
+                value: "mmi3",
+              }
+            )
+        )
+        .addStringOption((option) =>
+          option
+            .setName("groupe")
+            .setDescription("Choisis ton groupe")
+            .setRequired(true)
+            .addChoices(
+              {
+                name: "TP 1",
+                value: "tp1",
+              },
+              {
+                name: "TP 2",
+                value: "tp2",
+              },
+              {
+                name: "TP 3",
+                value: "tp3",
+              },
+              {
+                name: "TP 4",
+                value: "tp4",
+              },
+              {
+                name: "TP 5",
+                value: "tp5",
+              },
+              {
+                name: "TP 6",
+                value: "tp6",
+              }
+            )
+        )
+        .addIntegerOption((option) =>
+          option.setName("semaine").setDescription("Choisis la semaine")
+        )
     )
-    .addStringOption((option) =>
-      option
-        .setName("tp")
-        .setDescription("Choisis ton TP")
-        .setRequired(true)
-        .addChoices(...groupParams)
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("rt")
+        .setDescription("La commande pour les RT")
+        .addStringOption((option) =>
+          option
+            .setName("année")
+            .setDescription("Choisis ton année")
+            .setRequired(true)
+            .addChoices(
+              {
+                name: "1ère",
+                value: "rt1",
+              },
+              {
+                name: "2ème",
+                value: "rt2",
+              },
+              {
+                name: "3ème",
+                value: "rt3",
+              }
+            )
+        )
+        .addStringOption((option) =>
+          option
+            .setName("groupe")
+            .setDescription("Choisis ton groupe")
+            .setRequired(true)
+            .addChoices(
+              {
+                name: "TP A",
+                value: "tpa",
+              },
+              {
+                name: "TP B",
+                value: "tpc",
+              },
+              {
+                name: "TP C",
+                value: "tpc",
+              },
+              {
+                name: "TP D",
+                value: "tpd",
+              }
+            )
+        )
+        .addBooleanOption((option) =>
+          option
+            .setName("alternance")
+            .setDescription("Choisis si tu es en alternance")
+            .setRequired(true)
+        )
+        .addIntegerOption((option) =>
+          option.setName("semaine").setDescription("Choisis la semaine")
+        )
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages),
   async execute(interaction) {
-    // extract promo and tp from command
     await interaction.deferReply();
 
-    // define complete promo
-    const complete_promo =
-      interaction.options.getString("promo") +
-      "_" +
-      interaction.options.getString("tp");
+    var completePromo;
+
+    if (interaction.options.getSubcommand() === "mmi") {
+      completePromo = `${interaction.options.getString(
+        "année"
+      )}_${interaction.options.getString("groupe")}`;
+    }
+
+    if (interaction.options.getSubcommand() === "rt") {
+      completePromo = `${interaction.options.getString(
+        "année"
+      )}_${interaction.options.getString("groupe")}_${
+        interaction.options.getBoolean("alternance") ? "fa" : "fc"
+      }`;
+    }
+
     const now = new Date();
 
-    // get code from database
     const codeData = await prisma.calendarUrl.findUnique({
       where: {
-        promo: complete_promo,
+        promo: completePromo,
       },
       select: {
         code: true,
@@ -57,23 +167,22 @@ module.exports = {
       },
     });
 
-    // if code is not found
     if (!codeData) {
       await interaction.editReply(
-        "**🚨 [ERREUR] :** Le code de cet emploi du temps n'a pas été mis à jour ! Demande à un admin de faire la commande '/rebind' pour ajouter ou mettre à jour le code."
+        `**🚨 [ERREUR] :** Désolé, cette emploi du temps est un DLC, il est payant. Nan je déconne c'est juste qu'il existe pas, si tu penses qu'il devrait hésite pas à contacter un développeur ou un admin (transmet lui ça ${completePromo}). :)`
       );
       return;
     }
 
-    const now2 = new Date();
     const updateDate = new Date(codeData.updatedAt);
 
-    // if code is not updated since 3 hours
-    if (now2.getTime() - updateDate.getTime() > 10800000) {
-      // we initialize all the variables we need
+    if (now.getTime() - updateDate.getTime() > 10800000) {
+      await interaction.editReply(
+        "**📅 [INFO] :** Mise à jour de l'emploi du temps ... "
+      );
+      // s'il n'est pas à jour depuis plus de 3h on le met à jour
       const code = codeData.code;
       const project_id = 0;
-
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth();
 
@@ -82,35 +191,33 @@ module.exports = {
 
       const url = `https://adecampus.univ-rouen.fr/jsp/custom/modules/plannings/anonymous_cal.jsp?resources=${code}&projectId=${project_id}&startDay=1&startMonth=09&startYear=${startYear}&endDay=30&endMonth=6&endYear=${endYear}&calType=ical`;
 
-      createFileFromUrl(url, "./calendars/", complete_promo, ".ics");
+      createFileFromUrl(url, "./calendars/", completePromo, ".ics");
 
       await prisma.calendarUrl.update({
         where: {
-          promo: complete_promo,
+          promo: completePromo,
         },
         data: {
-          updatedAt: new Date(),
+          updatedAt: now,
         },
       });
-
-      await interaction.editReply(
-        `**📆 [EMPLOI DU TEMPS] :** L'emploi du temps a été mis à jour avec succés ! Chargement des données en cours ...`
-      );
-    } else {
-      await interaction.editReply(
-        `**📆 [EMPLOI DU TEMPS] :** Chargement des données en cours ...`
-      );
     }
 
     await sleep(2000);
 
-    const events = getEventsFromFile(`./calendars/${complete_promo}.ics`);
+    const events = getEventsFromFile(`./calendars/${completePromo}.ics`);
 
-    const weekEvents = events.filter(
-      (event) =>
-        getWeekNumber(event.start) === getWeekNumber(now) &&
+    const weekNumber =
+      typeof interaction.options.getInteger("semaine") === "number"
+        ? interaction.options.getInteger("semaine")
+        : getWeekNumber(now);
+
+    const weekEvents = events.filter((event) => {
+      return (
+        getWeekNumber(event.start) === weekNumber &&
         event.start.getFullYear() === now.getFullYear()
-    );
+      );
+    });
 
     const separatedWeekEvents = [];
 
@@ -136,12 +243,17 @@ module.exports = {
 
     const lastUpdate = codeData.updatedAt.toLocaleString().replace(" ", " à ");
 
+    await interaction.editReply(
+      "**🕹️ [INFO] :** Succés de la commande, passez une bonne journée :)"
+    );
+
     await interaction.followUp({
-      content: `**📆 [EMPLOI DU TEMPS] :** \n\n (${complete_promo
+      content: `**📆 [EMPLOI DU TEMPS] :** \n\n (${completePromo
         .split("_")
         .join("")
         .toUpperCase()}, Mis à jour le ${lastUpdate})`,
       files: [await generateImage(sortedWeekEvents)],
     });
+    return;
   },
 };

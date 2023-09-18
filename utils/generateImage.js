@@ -23,15 +23,36 @@ async function generateImage(events) {
   ctx.textAlign = "center";
 
   days.forEach((day, index) => {
+    // setting up days
     ctx.font = "bold 50px Lexend";
     ctx.fillStyle = "#ffffff";
     ctx.fillText(day, (canvas.width / 5) * index + canvas.width / 5 / 2, 50);
 
     events[index].forEach((event, i) => {
+      // font reset
       ctx.font = "bold 30px Lexend";
 
-      var numInString = event.title.match(/\d+/g);
+      if (
+        event.title.split(" ")[0] !== undefined &&
+        event.title.split(" ")[1] !== undefined
+      ) {
+        event.number =
+          event.title.split(" ")[0] + " " + event.title.split(" ")[1];
+      } else {
+        event.number = event.title;
+      }
 
+      var name = event.title.split(" ");
+
+      if (name.length > 2) {
+        name.shift();
+        name.shift();
+      }
+
+      event.name = name.join(" ");
+
+      // chose color depending on event
+      var numInString = event.title.match(/\d+/g);
       if (numInString != null) {
         ctx.fillStyle = `hsl(${
           parseInt(numInString.join("")) * 30
@@ -46,13 +67,25 @@ async function generateImage(events) {
         }
       }
 
+      // get start and end date
       var startDate = new Date(event.start);
       var endDate = new Date(event.end);
       var duration = new Date(endDate - startDate);
 
-      // prettier-ignore
-      event.teacher = event.description.split(/\n/)[event.description.split(/\n/).length - 3].startsWith("BUT") ? "" : event.description.split(/\n/)[event.description.split(/\n/).length - 3];
+      event.teacher = event.description
+        .split("\n")
+        .filter((part) => part.length > 5)
+        .filter((part) => !part.includes("CM"))
+        .filter((part) => !part.includes("BUT"))
+        .filter((part) => !part.includes("."))
+        .filter((part) => !part.includes("TD"))
+        .filter((part) => !part.includes("TP"))
+        .filter((part) => !part.includes("RT"))
+        .filter((part) => !part.includes("MMI"))
+        .join(" ")
+        .replace(/\([^)]*\)/g, "");
 
+      // draw event
       ctx.beginPath();
       ctx.roundRect(
         (canvas.width / 5 + 2) * index,
@@ -66,12 +99,12 @@ async function generateImage(events) {
         (duration.getHours() - 1 + duration.getMinutes() / 60) * hourHeight,
         30
       );
-
       ctx.fill();
-
       ctx.fillStyle = "#000000";
 
+      // draw event text
       if (event.title.search(/\d/) === -1) {
+        // if no number in title (ex: SAE Autonomie) then draw normally
         ctx.fillText(
           event.title,
           (canvas.width / 5) * index + canvas.width / 5 / 2,
@@ -84,10 +117,10 @@ async function generateImage(events) {
             35
         );
       } else {
-        var separatedTitle = /^(.*?)(\d.\d*)(.*)$/g.exec(event.title);
+        // else draw title with number in bold and bigger
 
         ctx.fillText(
-          separatedTitle[1] + separatedTitle[2],
+          event.number,
           (canvas.width / 5) * index + canvas.width / 5 / 2,
           80 +
             (startDate.getHours() +
@@ -98,10 +131,12 @@ async function generateImage(events) {
             35
         );
 
+        // font reset
         ctx.font = "regular 15px Lexend";
 
+        // draw the rest of the title
         ctx.fillText(
-          separatedTitle[3],
+          event.name,
           (canvas.width / 5) * index + canvas.width / 5 / 2,
           80 +
             (startDate.getHours() +
