@@ -1,6 +1,8 @@
 const { createCanvas, GlobalFonts } = require("@napi-rs/canvas");
 const path = require("path");
 
+const getWeekNumber = require("./getWeekNumber");
+
 process.noDeprecation = true;
 
 GlobalFonts.registerFromPath(
@@ -17,6 +19,8 @@ async function generateImage(events) {
   ctx.fillStyle = "#ffffff";
 
   const hourHeight = (canvas.height - 80) / 11;
+
+  const weekNumber = getWeekNumber(events[0][0].start);
 
   ctx.font = "regular 30px Lexend";
 
@@ -57,8 +61,11 @@ async function generateImage(events) {
         ctx.fillStyle = `hsl(${
           parseInt(numInString.join("")) * 30
         }, 100%, 65%)`;
+        if (event.title.startsWith("DS")) {
+          ctx.fillStyle = "yellow";
+        }
       } else {
-        if (event.title.startsWith("Examen")) {
+        if (event.title.startsWith("Examen") || event.title.startsWith("DS")) {
           ctx.fillStyle = "yellow";
         } else if (event.title.startsWith("SAE Autonomie")) {
           ctx.fillStyle = "orange";
@@ -191,7 +198,7 @@ async function generateImage(events) {
       ctx.fillStyle = "#ffffff";
 
       ctx.fillText(
-        "Généré par BDE - Labete#2793",
+        `Semaine ${weekNumber} - Généré par BDE - Labete#2793`,
         canvas.width - 20,
         canvas.height - 5
       );

@@ -47,13 +47,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.user.bot) return;
 
   // if not the the user 689039190163194098 (me), return
-  if (interaction.user.id !== "689039190163194098") {
-    interaction.reply({
-      content: "Le bot est en maitenance, patience jeune padawan.",
-      ephemeral: false,
-    });
-    return;
-  }
+  // if (interaction.user.id !== "689039190163194098") {
+  //   interaction.reply({
+  //     content: "Le bot est en maintenance, patience jeune padawan.",
+  //     ephemeral: false,
+  //   });
+  //   return;
+  // }
 
   console.log(`🪶 [COMMAND] La commande ${interaction.commandName} vient d'être utilisée par 
   ${interaction.user.username} sur le serveur ${interaction.guild.name}.
