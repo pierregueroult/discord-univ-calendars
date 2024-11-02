@@ -1,8 +1,10 @@
-# BDE LABETE - Bot Discord Emploi du temps
+# Discord Bot University Calendars
 
 ## Description
 
 Ce bot Discord permet d'afficher l'emploi du temps d'un groupe de la filiaire MMI ou RT de l'IUT de Rouen antenne d'Elbeuf. Il offre la possibilité d'utiliser une commande pour afficher l'emploi du temps de la semaine en cours ou d'une semaine spécifique, permettant ainsi au membre du serveur discord officiel de voir leurs emplois du temps des semaines à venir.
+
+This Discord bot displays the schedule of a group from the MMI or RT programs at the IUT of Rouen, Elbeuf campus. It allows users to use a command to show the schedule for the current week or a specific week, enabling members of the official Discord server to view their schedules for upcoming weeks.
 
 ## Technologies utilisées
 
